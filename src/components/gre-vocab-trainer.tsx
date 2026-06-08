@@ -91,7 +91,7 @@ type StoreState = {
 };
 
 const STORE_KEY = "gre-visual-memory-trainer";
-const DATASET_VERSION = "gre-3599-fill-2026-v6";
+const DATASET_VERSION = "gre-3599-fill-reading-photos-2026-v7";
 
 type UserProfile = {
   name: string;
@@ -118,7 +118,7 @@ type TrainerProgress = {
   sessionIndex?: number;
   focusIndex?: number;
   quizIndex?: number;
-  quizMode?: "both" | "fill" | "reading";
+  quizMode?: "fill" | "reading";
   readingIndex?: number;
   visualWordId?: string;
 };
@@ -348,9 +348,9 @@ function useTrainerStore() {
     let cancelled = false;
     fetch("/data/gre-vocab-extracted.local.json")
       .then((response) => (response.ok ? response.json() : null))
-      .then((nextWords: Word[] | null) => {
+      .then((nextWords: Array<Record<string, unknown>> | null) => {
         if (cancelled || !nextWords?.length) return;
-        importWords(nextWords);
+        importWords(nextWords.map(normalizeImportedWord));
         setDatasetVersion(DATASET_VERSION);
       })
       .catch(() => undefined);
@@ -1130,10 +1130,17 @@ function VisualPage({ store }: { store: ReturnType<typeof useTrainerStore> }) {
   const selected = store.words.find((word) => word.id === selectedId) ?? store.words[0];
 
   useEffect(() => {
-    if (store.progress.visualWordId) {
+    const requestedWordId =
+      typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("word") ?? undefined
+        : undefined;
+    if (requestedWordId && store.words.some((word) => word.id === requestedWordId)) {
+      setSelectedId(requestedWordId);
+      store.updateProgress({ visualWordId: requestedWordId });
+    } else if (store.progress.visualWordId) {
       setSelectedId(store.progress.visualWordId);
     }
-  }, [store.progress.visualWordId]);
+  }, [store.progress.visualWordId, store.words]);
 
   if (!selected) {
     return (
@@ -1197,8 +1204,8 @@ function QuizPage({ store }: { store: ReturnType<typeof useTrainerStore> }) {
   const [placements, setPlacements] = useState<Record<string, string[]>>({});
   const [dragChoice, setDragChoice] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [quizMode, setQuizMode] = useState<"both" | "fill" | "reading">(
-    store.progress.quizMode ?? "both",
+  const [quizMode, setQuizMode] = useState<"fill" | "reading">(
+    store.progress.quizMode === "reading" ? "reading" : "fill",
   );
   const [modeRestored, setModeRestored] = useState(false);
   const [explanationStatus, setExplanationStatus] = useState("");
@@ -1249,7 +1256,7 @@ function QuizPage({ store }: { store: ReturnType<typeof useTrainerStore> }) {
   }, [quizItems.length, store.progress.quizIndex]);
 
   useEffect(() => {
-    const savedMode = store.progress.quizMode;
+    const savedMode = store.progress.quizMode === "reading" ? "reading" : "fill";
     if (!modeRestored && savedMode && savedMode !== quizMode) {
       setQuizMode(savedMode);
     }
@@ -1626,13 +1633,12 @@ function QuizModeSwitch({
   mode,
   onModeChange,
 }: {
-  mode: "both" | "fill" | "reading";
-  onModeChange: (mode: "both" | "fill" | "reading") => void;
+  mode: "fill" | "reading";
+  onModeChange: (mode: "fill" | "reading") => void;
 }) {
-  const options: Array<{ key: "both" | "fill" | "reading"; label: string }> = [
-    { key: "both", label: "全部题库" },
-    { key: "fill", label: "只看填空" },
-    { key: "reading", label: "只看阅读" },
+  const options: Array<{ key: "fill" | "reading"; label: string }> = [
+    { key: "fill", label: "填空题库" },
+    { key: "reading", label: "阅读题库" },
   ];
   return (
     <div className="flex rounded-md border border-stone-200 bg-[#f7f6f1] p-1">
@@ -1828,7 +1834,7 @@ function ReadingQuizPanel({ store }: { store: ReturnType<typeof useTrainerStore>
   }
 
   return (
-    <div className="mt-6 grid gap-5 lg:grid-cols-[280px_1fr]">
+    <div className="mt-6 grid gap-5 xl:grid-cols-[220px_minmax(360px,0.9fr)_minmax(420px,1fr)]">
       <aside className="max-h-[720px] overflow-auto rounded-md border border-stone-200 bg-[#f7f6f1] p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -1927,6 +1933,21 @@ function ReadingQuizPanel({ store }: { store: ReturnType<typeof useTrainerStore>
         </div>
         <div className="mt-5 rounded-md bg-white p-4 text-sm leading-7 text-slate-800">
           {current.text}
+        </div>
+      </article>
+      <section className="max-h-[760px] overflow-auto rounded-md border border-stone-200 bg-white p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <Badge className="border border-amber-200 bg-[#fff8de] text-amber-950 hover:bg-[#fff8de]">
+              Reading questions
+            </Badge>
+            <h2 className="mt-3 text-2xl font-semibold">
+              Passage {current.passage} 题目
+            </h2>
+          </div>
+          <Badge variant="outline" className="rounded-md bg-white">
+            {current.questions.length} 题
+          </Badge>
         </div>
         <div className="mt-5 space-y-4">
           {current.questions.map((question) => {
@@ -2050,7 +2071,7 @@ function ReadingQuizPanel({ store }: { store: ReturnType<typeof useTrainerStore>
             提交阅读答案
           </Button>
         </div>
-      </article>
+      </section>
     </div>
   );
 }
@@ -2553,74 +2574,28 @@ function WeakWordsPage({ store }: { store: ReturnType<typeof useTrainerStore> })
             </Badge>
           </div>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
-            {forgottenWords.slice(0, 12).map((word) => (
+            {forgottenWords.map((word) => (
               <Link
                 key={word.id}
-                href={`/word/${word.id}`}
-                className="flex items-center justify-between rounded-md border border-stone-200 bg-white px-3 py-2 text-sm transition hover:border-slate-300"
+                href={`/visual?word=${word.id}`}
+                onClick={() => store.updateProgress({ visualWordId: word.id })}
+                className="grid min-h-16 rounded-md border border-stone-200 bg-white px-3 py-2 text-sm transition hover:border-slate-400 hover:shadow-sm"
               >
-                <span className="font-medium">{word.word}</span>
-                <span className="text-xs text-slate-500">
-                  {store.pinnedWords[word.id] ? `📌×${store.pinnedWords[word.id]}` : word.coreMeaningCn}
+                <span className="flex items-center justify-between gap-2 font-semibold">
+                  {word.word}
+                  {store.pinnedWords[word.id] ? (
+                    <span className="text-xs text-amber-700">
+                      📌×{store.pinnedWords[word.id]}
+                    </span>
+                  ) : null}
+                </span>
+                <span className="mt-1 line-clamp-1 text-xs text-slate-600">
+                  {word.coreMeaningCn}
                 </span>
               </Link>
             ))}
           </div>
         </section>
-      </div>
-      <div className="mt-8 flex items-end justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-semibold">毫无印象单词细节</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            每张卡都保留记忆钩子、混淆点和你的笔记，方便导出前复盘。
-          </p>
-        </div>
-      </div>
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
-        {forgottenWords.map((word) => {
-          const memory = memoryByWord.get(word.id) ?? fallbackMemory(word.id);
-          return (
-            <article
-              key={word.id}
-              className="rounded-md border border-slate-200 bg-white p-5 shadow-sm"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-2xl font-semibold">{word.word}</h2>
-                  <p className="mt-1 text-sm text-slate-600">
-                    {word.coreMeaningCn}
-                  </p>
-                </div>
-                <Badge className="bg-orange-100 text-orange-950 hover:bg-orange-100">
-                  忘记 {memory.wrongCount} 次
-                </Badge>
-              </div>
-              <div className="mt-4 rounded-md bg-[#f7f6f1] p-4 text-sm leading-6">
-                <p className="font-medium">为什么容易忘</p>
-                <p className="mt-1 text-slate-600">
-                  词义偏抽象，且容易和 {word.confusingWith ?? word.antonyms[0] ?? "相反词"} 混淆。
-                </p>
-              </div>
-              <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 p-4 text-sm leading-6 text-emerald-950">
-                <p className="font-medium">更强记忆钩子</p>
-                <p className="mt-1">{word.memoryHookCn}</p>
-              </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <ComparisonBlock label={word.word} text={word.visualScene} />
-                <ComparisonBlock
-                  label={word.confusingWith ?? word.antonyms[0] ?? "contrast"}
-                  text={`想象一个方向相反的画面：${word.antonyms.join(", ") || "opposite meaning"}`}
-                />
-              </div>
-              {store.notes[word.id] && (
-                <div className="mt-4 rounded-md border border-sky-200 bg-sky-50 p-4 text-sm leading-6 text-sky-950">
-                  <p className="font-medium">你的记忆评论</p>
-                  <p className="mt-1 whitespace-pre-wrap">{store.notes[word.id]}</p>
-                </div>
-              )}
-            </article>
-          );
-        })}
       </div>
     </section>
   );
