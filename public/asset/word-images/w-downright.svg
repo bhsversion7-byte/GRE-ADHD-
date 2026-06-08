@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-label="downright GRE visual memory card">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff2d8"/>
+      <stop offset="100%" stop-color="#f8fafc"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <rect x="76" y="72" width="1048" height="756" rx="34" fill="#ffffff" opacity="0.68" filter="url(#softShadow)"/>
+  <rect x="110" y="108" width="250" height="46" rx="14" fill="#ffffff" opacity="0.86"/>
+  <text x="132" y="138" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="#b45309">GRE visual cue</text>
+  <text x="110" y="260" font-family="Inter, Arial, sans-serif" font-size="96" font-weight="800" fill="#1f2937">downright</text>
+  <rect x="112" y="304" width="420" height="92" rx="20" fill="#fff2d8" opacity="0.9"/>
+  <text x="136" y="350" font-size="30" font-weight="700" fill="#1f2937">完全地，彻底 地</text>
+  <rect x="112" y="448" width="976" height="194" rx="26" fill="#ffffff" opacity="0.74"/>
+  <text x="140" y="500" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="800" fill="#b45309">downright memory scene</text>
+  <text x="140" y="552" font-size="34" font-weight="750" fill="#1f2937">把 downright 变成一个和“完全地，彻底 地”强绑定的夸张画面。</text>
+  <rect x="112" y="692" width="976" height="96" rx="22" fill="#f8fafc" opacity="0.92"/>
+  <text x="140" y="734" font-size="24" font-weight="650" fill="#1f2937">先记画面，再回到 downright：看到画面时立刻说出“完全地，彻底 地”。</text>
+  <circle cx="965" cy="207" r="82" fill="#b45309" opacity="0.14"/>
+  <path d="M920 208 C948 166 995 166 1020 205 C994 248 948 248 920 208Z" fill="none" stroke="#b45309" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="985" cy="208" r="18" fill="#b45309"/>
+  <text x="110" y="830" font-family="Inter, Arial, sans-serif" font-size="18" fill="#64748b">local asset · no API generation</text>
+</svg>
