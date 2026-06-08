@@ -26,6 +26,67 @@
 - 更细致地支持每日 200-500 个单词的学习节奏。
 - 扩充本地图像资产，减少对外部 API key 的依赖。
 
+## 如何访问
+
+这个项目最终应该以“打开网页即可使用”为主要方式，而不是要求每个用户都在本地安装开发环境。
+
+### 普通用户
+
+普通用户不建议直接下载源码运行。当前公网网站还没有开放；开放后，README 顶部会放置正式访问地址。到时候用户只需要打开网站即可使用单词卡、测试、错题库和本地图像记忆功能。
+
+### 开发者本地运行
+
+如果你是开发者，或想提前体验本地版本，可以使用下面的方式。
+
+环境要求：
+
+- Node.js 22 或更新版本
+- pnpm 11.5.2
+- Git
+
+macOS / Linux / Windows 通用命令：
+
+```bash
+git clone https://github.com/bhsversion7-byte/GRE-ADHD-.git
+cd GRE-ADHD-
+corepack enable
+corepack prepare pnpm@11.5.2 --activate
+pnpm install
+pnpm dev
+```
+
+启动后打开：
+
+```bash
+http://localhost:3000
+```
+
+Windows 用户也可以直接运行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/start-windows.ps1
+```
+
+这个脚本会检查 Node.js、准备 pnpm、安装依赖并启动本地开发服务。
+
+### 部署给所有人访问
+
+推荐下一步部署到 Cloudflare Pages 或 Vercel。部署完成后，GitHub 仓库主要作为开发者入口；真实用户入口应该是公网 URL。
+
+Cloudflare Pages 的建议配置：
+
+- Build command: `pnpm install && pnpm build`
+- Output / runtime: 使用当前 Next.js + OpenNext 配置
+- Node version: 22 或更新版本
+
+Vercel 的建议配置：
+
+- Framework preset: Next.js
+- Install command: `pnpm install`
+- Build command: `pnpm build`
+
+目前仓库不包含用户上传的原始 PDF 和答案文件，只包含代码、处理后的本地 JSON 数据和本地图像资产。
+
 ## 已实现功能
 
 ### 1. 每日学习目标
@@ -106,9 +167,11 @@
 - 本地 JSON 词库与题库
 - 本地 SVG 单词视觉资产
 
-## 本地运行
+## 快速本地运行
 
 ```bash
+corepack enable
+corepack prepare pnpm@11.5.2 --activate
 pnpm install
 pnpm dev
 ```

@@ -2,6 +2,10 @@
   "name": "gre-adhd-visual-memory",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@11.5.2",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",
