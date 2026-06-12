@@ -2704,7 +2704,7 @@ function WordMapPage({ store }: { store: ReturnType<typeof useTrainerStore> }) {
             return (
               <Link
                 key={word.id}
-                href={`/word/${word.id}`}
+                href={`/visual?word=${word.id}`}
                 className={cn(
                   "flex min-h-20 flex-col justify-between rounded-md p-3 text-sm transition hover:scale-[1.01]",
                   statusColor[memory.status],
@@ -2758,7 +2758,7 @@ function RootsPage({ store }: { store: ReturnType<typeof useTrainerStore> }) {
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
               {words.slice(0, 42).map((word) => (
-                <Link key={word.id} href={`/word/${word.id}`}>
+                <Link key={word.id} href={`/visual?word=${word.id}`}>
                   <Badge variant="outline" className="rounded-md bg-[#f7f6f1] text-slate-700">
                     {word.word}
                   </Badge>
