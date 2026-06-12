@@ -91,7 +91,7 @@ type StoreState = {
 };
 
 const STORE_KEY = "gre-visual-memory-trainer";
-const DATASET_VERSION = "gre-3599-fill-reading-photos-2026-v7";
+const DATASET_VERSION = "gre-3599-fill-reading-photos-quiz-2026-v8";
 
 type UserProfile = {
   name: string;
@@ -2899,6 +2899,46 @@ function SettingsPage({ store }: { store: ReturnType<typeof useTrainerStore> }) 
           label="深色模式"
           checked={settings.darkMode}
           onCheckedChange={(checked) => update("darkMode", checked)}
+        />
+        <FieldRow
+          label="例句层级"
+          hint="控制单词卡里例句的难度取向。"
+          control={
+            <select
+              className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm"
+              value={settings.exampleLevel}
+              onChange={(event) =>
+                update(
+                  "exampleLevel",
+                  event.target.value as TrainerSettings["exampleLevel"],
+                )
+              }
+            >
+              <option value="simple">基础易懂</option>
+              <option value="gre">GRE 风格</option>
+              <option value="advanced">进阶抽象</option>
+            </select>
+          }
+        />
+        <FieldRow
+          label="中文释义详细度"
+          hint="控制解释和提示的中文信息密度。"
+          control={
+            <select
+              className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm"
+              value={settings.chineseDetail}
+              onChange={(event) =>
+                update(
+                  "chineseDetail",
+                  event.target.value as TrainerSettings["chineseDetail"],
+                )
+              }
+            >
+              <option value="brief">简洁</option>
+              <option value="standard">标准</option>
+              <option value="detailed">详细</option>
+            </select>
+          }
         />
         <Button variant="outline" onClick={store.resetDemo}>
           重置为示例数据

@@ -44,6 +44,10 @@ pnpm dev
 
 如果开发模式弹出 hydration warning，并且提示里出现 `data-new-gr-c-s-check-loaded` 或 `data-gr-ext-installed`，通常是 Grammarly 等浏览器插件在 React 加载前修改了页面属性。这个问题不影响学习功能；项目已加入兼容处理。如果仍出现，可以临时关闭相关插件或用无痕窗口打开 `http://localhost:3000`。
 
+## 测试页为空时
+
+当前版本会用新的 `datasetVersion` 自动重新导入 `public/data/gre-vocab-extracted.local.json`。这个文件包含张巍填空题库的题干、选项和答案。如果“测试”页仍显示没有题目，先刷新页面；如果仍不恢复，可以清除浏览器 `localStorage` 里的 `gre-visual-memory-trainer`，再重新打开 `http://localhost:3000`。
+
 ## 当前功能
 
 - 每日 200-500 词学习节奏

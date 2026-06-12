@@ -498,7 +498,89 @@ export function normalizeImportedWord(raw: Record<string, unknown>, index: numbe
     frequencyTag: normalizeFrequency(raw.frequencyTag ?? raw.frequency_tag),
     categoryTags: splitList(raw.categoryTags ?? raw.category_tags),
     confusingWith: get("confusingWith") || get("confusing_with"),
+    quizQuestion: normalizeQuizQuestion(raw.quizQuestion ?? raw.quiz_question),
+    source: get("source"),
   };
+}
+
+function normalizeQuizQuestion(value: unknown): QuizQuestion | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const raw = value as Record<string, unknown>;
+  const prompt = getText(raw.prompt);
+  const blanks = Array.isArray(raw.blanks)
+    ? raw.blanks
+        .map(normalizeQuizBlank)
+        .filter((blank): blank is QuizBlank => Boolean(blank))
+    : undefined;
+
+  if (!prompt && !blanks?.length) return undefined;
+
+  const type = getText(raw.type);
+  const normalizedType =
+    type === "single-blank" || type === "multi-blank" || type === "sentence-equivalence"
+      ? type
+      : undefined;
+
+  return {
+    prompt,
+    choices: splitList(raw.choices),
+    answer: getText(raw.answer),
+    answerExplanation: getText(raw.answerExplanation ?? raw.answer_explanation),
+    source: getText(raw.source),
+    type: normalizedType,
+    blanks,
+    targetWord: getText(raw.targetWord ?? raw.target_word),
+    hasOfficialAnswer: toBoolean(raw.hasOfficialAnswer ?? raw.has_official_answer),
+    testNumber: toOptionalNumber(raw.testNumber ?? raw.test_number),
+    sectionNumber: toOptionalNumber(raw.sectionNumber ?? raw.section_number),
+    questionNumber: toOptionalNumber(raw.questionNumber ?? raw.question_number),
+  };
+}
+
+function normalizeQuizBlank(value: unknown): QuizBlank | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const raw = value as Record<string, unknown>;
+  const choices = Array.isArray(raw.choices)
+    ? raw.choices
+        .map(normalizeQuizChoice)
+        .filter((choice): choice is QuizChoice => Boolean(choice))
+    : [];
+  const requiredCount = Number(raw.requiredCount ?? raw.required_count ?? 1);
+
+  return {
+    id: getText(raw.id),
+    label: getText(raw.label),
+    choices,
+    answerKeys: splitList(raw.answerKeys ?? raw.answer_keys),
+    requiredCount: requiredCount === 2 ? 2 : 1,
+  };
+}
+
+function normalizeQuizChoice(value: unknown, index: number): QuizChoice | undefined {
+  if (typeof value === "string") {
+    return { key: String.fromCharCode(65 + index), word: value };
+  }
+  if (!value || typeof value !== "object") return undefined;
+  const raw = value as Record<string, unknown>;
+  return {
+    key: getText(raw.key, String.fromCharCode(65 + index)),
+    word: getText(raw.word),
+  };
+}
+
+function getText(value: unknown, fallback = "") {
+  return String(value ?? fallback).trim();
+}
+
+function toBoolean(value: unknown) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") return value.toLowerCase() === "true";
+  return Boolean(value);
+}
+
+function toOptionalNumber(value: unknown) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : undefined;
 }
 
 export function parseCsv(text: string): Record<string, unknown>[] {

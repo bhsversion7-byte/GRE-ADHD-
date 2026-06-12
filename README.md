@@ -89,6 +89,7 @@ http://localhost:3000
 - 如果 3000 端口被占用，Next.js 可能会提示使用 3001；以终端显示的地址为准。
 - 学习进度、错题、pin 标记和笔记保存在当前浏览器的 `localStorage` 中。换浏览器或清理浏览器数据后，本地记录会变化。
 - 如果开发模式弹出 hydration warning，并且提示里出现 `data-new-gr-c-s-check-loaded` 或 `data-gr-ext-installed`，通常是 Grammarly 等浏览器插件在 React 加载前修改了页面属性。这个问题不影响学习功能；项目已在根布局中加入兼容处理。如果仍出现，可以临时关闭相关浏览器插件或用无痕窗口打开 `http://localhost:3000`。
+- 如果“测试”页显示没有题目，先刷新页面。当前版本会用新的 `datasetVersion` 自动重新导入 `public/data/gre-vocab-extracted.local.json`，其中包含张巍填空题库的题干、选项和答案。如果刷新后仍为空，可以在浏览器开发者工具里清除 `localStorage` 的 `gre-visual-memory-trainer`，再重新打开 `http://localhost:3000`。
 - 需要完整交互时必须使用 `pnpm dev` 启动本地站点；仓库已删除 `index_1.html`，不再支持双击 HTML 作为正式查看方式。
 
 ## 已实现功能
